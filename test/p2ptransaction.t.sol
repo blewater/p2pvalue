@@ -10,7 +10,8 @@ contract P2PTransactionTest is Test {
 
     function setUp() public {
         companyAddress = address(0x123); // Replace with your actual company address
-        p2p = new P2PTransaction(companyAddress);
+        p2p = new P2PTransaction();
+        p2p.initialize(companyAddress);
     }
 
     function testSingleDepositUpdatesBalance() public {

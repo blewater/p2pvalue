@@ -2,8 +2,9 @@
 pragma solidity ^0.8.21;
 
 import "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
-contract P2PTransaction is ReentrancyGuardUpgradeable {
+contract P2PTransaction is Initializable, ReentrancyGuardUpgradeable {
     // custom errors
     error Overflow(uint256 a, uint256 b);
     error Underflow(uint256 a, uint256 b);
@@ -15,7 +16,7 @@ contract P2PTransaction is ReentrancyGuardUpgradeable {
     // State variables
     mapping(address => uint256) private balances;
     address public companyAddress;
-    address private owner; // useful for testing
+    address private owner; // useful for upgradeability
 
     // constants
     uint256 private constant BASIS_POINTS = 10000; // For fee calculations
@@ -28,8 +29,7 @@ contract P2PTransaction is ReentrancyGuardUpgradeable {
     event Withdrawn(address indexed user, uint256 amount);
     event Sent(address indexed from, address indexed to, uint256 amount, uint256 fee);
 
-    // Constructor
-    constructor(address _companyAddress) {
+    function initialize(address _companyAddress) public initializer {
         if (_companyAddress == address(0)) {
             revert ZeroAddress(_companyAddress);
         }
