@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.21;
 
-import "lib/openzeppelin-contracts/contracts/utils/ReentrancyGuard.sol";
+import "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
 
-contract P2PTransaction is ReentrancyGuard {
+contract P2PTransaction is ReentrancyGuardUpgradeable {
     // custom errors
     error Overflow(uint256 a, uint256 b);
     error Underflow(uint256 a, uint256 b);
@@ -85,7 +85,6 @@ contract P2PTransaction is ReentrancyGuard {
         require(recipient != address(0), "Invalid recipient address");
 
         uint256 fee = calculateFee(amount);
-        console2.log("fee", fee);
 
         unchecked {
             // balances[msg.sender] - amount;
