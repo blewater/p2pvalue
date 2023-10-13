@@ -10,7 +10,7 @@ contract P2PTransaction is ReentrancyGuard {
     error ZeroAddress(address zeroAddress);
     error ZeroAmount(uint256 amount);
     error InsufficientBalance(uint256 balance, uint256 amount);
-    error TransferFailed();
+    error TransferFailed(address recipient, uint256 amount);
 
     // State variables
     mapping(address => uint256) private balances;
@@ -59,6 +59,9 @@ contract P2PTransaction is ReentrancyGuard {
         if (balances[msg.sender] < amount) {
             revert InsufficientBalance(balances[msg.sender], amount);
         }
+        if (address(this).balance < amount) {
+            revert InsufficientBalance(address(this).balance, amount);
+        }
 
         unchecked {
             uint256 newBalance = balances[msg.sender] - amount;
@@ -68,10 +71,9 @@ contract P2PTransaction is ReentrancyGuard {
             balances[msg.sender] = newBalance;
         }
 
-        payable(msg.sender).transfer(amount);
         (bool success, ) = payable(msg.sender).call{value: amount}("");
         if (!success) {
-            revert TransferFailed();
+            revert TransferFailed(msg.sender, amount);
         }
 
         emit Withdrawn(msg.sender, amount);
@@ -83,6 +85,7 @@ contract P2PTransaction is ReentrancyGuard {
         require(recipient != address(0), "Invalid recipient address");
 
         uint256 fee = calculateFee(amount);
+        console2.log("fee", fee);
 
         unchecked {
             // balances[msg.sender] - amount;
