@@ -124,7 +124,7 @@ contract P2PTransaction is Initializable, ReentrancyGuardUpgradeable {
     }
 
     // Internal function to calculate fee
-    function calculateFee(uint256 amount) internal pure returns (uint256) {
+    function calculateFee(uint256 amount) private pure returns (uint256) {
         uint256 feeRate;
         if (amount < 1 ether) {
             feeRate = MAX_FEE_PCNT; // 0.2%

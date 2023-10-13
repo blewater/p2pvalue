@@ -2,7 +2,8 @@
 pragma solidity ^0.8.21;
 
 import "lib/forge-std/src/Test.sol";
-import {P2PTransaction} from "../src/p2ptransaction.sol";
+import "../src/p2ptransaction_v2.sol";
+import "../src/p2ptransaction_v1.sol";
 
 contract P2PTransactionTest is Test {
     P2PTransaction p2p;
