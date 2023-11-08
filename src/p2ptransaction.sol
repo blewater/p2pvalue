@@ -3,8 +3,15 @@ pragma solidity ^0.8.21;
 
 import "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 
-contract P2PTransaction is Initializable, ReentrancyGuardUpgradeable {
+contract P2PTransaction is
+    Initializable,
+    OwnableUpgradeable,
+    ReentrancyGuardUpgradeable,
+    UUPSUpgradeable
+{
     // custom errors
     error Overflow(uint256 a, uint256 b);
     error Underflow(uint256 a, uint256 b);
@@ -16,28 +23,31 @@ contract P2PTransaction is Initializable, ReentrancyGuardUpgradeable {
     // State variables
     mapping(address => uint256) private balances;
     address public companyAddress;
-    address private owner; // useful for upgradeability
 
     // constants
     uint256 private constant BASIS_POINTS = 10000; // For fee calculations
     uint256 private constant MAX_FEE_PCNT = 20; // 0.2%
     uint256 private constant MID_FEE_PCNT = 15; // 0.15%
-    uint256 private constant MIN_FEE_PCNT = 10; // 0.1%   
+    uint256 private constant MIN_FEE_PCNT = 10; // 0.1%
 
     // Events
     event Deposited(address indexed user, uint256 amount);
     event Withdrawn(address indexed user, uint256 amount);
-    event Sent(address indexed from, address indexed to, uint256 amount, uint256 fee);
+    event Sent(
+        address indexed from,
+        address indexed to,
+        uint256 amount,
+        uint256 fee
+    );
 
     function initialize(address _companyAddress) public initializer {
         if (_companyAddress == address(0)) {
             revert ZeroAddress(_companyAddress);
         }
         companyAddress = _companyAddress;
-        owner = msg.sender;
     }
 
-    // Deposit function. Because it's not interacting with external contracts, it's not marked as nonReentrant. 
+    // Deposit function. Because it's not interacting with external contracts, it's not marked as nonReentrant.
     // This assumption should be revisited whenever the deposit logic is modified.
     function deposit() external payable {
         if (msg.value == 0) {
@@ -88,7 +98,7 @@ contract P2PTransaction is Initializable, ReentrancyGuardUpgradeable {
 
         unchecked {
             // balances[msg.sender] - amount;
-            uint256 newBalance = balances[msg.sender] - amount;          
+            uint256 newBalance = balances[msg.sender] - amount;
             if (newBalance > balances[msg.sender]) {
                 revert Underflow(balances[msg.sender], amount);
             }
@@ -133,7 +143,7 @@ contract P2PTransaction is Initializable, ReentrancyGuardUpgradeable {
         } else {
             feeRate = MIN_FEE_PCNT; // 0.1%
         }
-        
+
         unchecked {
             uint256 amountTimesFeeRate = amount * feeRate;
             if (amountTimesFeeRate < amount) {
@@ -147,5 +157,9 @@ contract P2PTransaction is Initializable, ReentrancyGuardUpgradeable {
 
             return fee;
         }
+    }
+
+    // Override the _authorizeUpgrade function to include access control
+    function _authorizeUpgrade(address newImplementation) internal override onlyOwner {
     }
 }
